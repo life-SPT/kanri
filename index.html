@@ -1,0 +1,648 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>作業・出欠管理表</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;font-size:13px;background:#f5f5f5;}
+.app{max-width:480px;margin:0 auto;padding:0.5rem;background:#f5f5f5;min-height:100vh;}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;padding-bottom:0.5rem;border-bottom:0.5px solid #ddd;background:#f5f5f5;}
+.hd-l .title{font-size:14px;font-weight:500;color:#111;}
+.hd-l .date{font-size:11px;color:#666;margin-top:1px;}
+.hd-r{display:flex;gap:5px;}
+.btn{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid #ccc;background:#fff;color:#555;cursor:pointer;}
+.btn-s{border-color:#185FA5;color:#185FA5;}
+.btn-p{border-color:#1D9E75;color:#1D9E75;}
+.btn-r{border-color:#A32D2D;color:#A32D2D;}
+.sync-bar{font-size:10px;padding:3px 8px;border-radius:4px;margin-bottom:0.4rem;text-align:center;}
+.sync-ok{background:#EAF3DE;color:#3B6D11;}
+.sync-err{background:#FCEBEB;color:#A32D2D;}
+.sync-ing{background:#FAEEDA;color:#854F0B;}
+.holiday-banner{background:#FAEEDA;color:#854F0B;border-radius:6px;padding:5px 10px;font-size:11px;margin-bottom:0.5rem;display:none;}
+.stats{display:flex;gap:6px;margin-bottom:0.5rem;flex-wrap:wrap;}
+.sc{background:#fff;border-radius:6px;padding:4px 10px;font-size:12px;color:#666;border:0.5px solid #eee;}
+.sc b{font-weight:500;}
+.sc.at b{color:#3B6D11;}.sc.ab b{color:#A32D2D;}.sc.tt b{color:#111;}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.5rem;}
+.lg{display:flex;align-items:center;gap:3px;font-size:10px;color:#666;}
+.lgd{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.tbl-wrap{border:0.5px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+col.c-no{width:22px;}col.c-name{width:auto;}col.c-st{width:50px;}col.c-am{width:88px;}col.c-pm{width:88px;}
+thead th{background:#f0f0f0;font-size:10px;font-weight:500;padding:4px 3px;text-align:center;border-bottom:0.5px solid #ddd;color:#666;white-space:nowrap;}
+th.th-name{text-align:left;padding-left:6px;}
+tbody tr{border-bottom:0.5px solid #eee;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#f9f9f9;}
+tbody tr.row-abs td{opacity:0.45;}
+td{padding:3px 3px;text-align:center;vertical-align:middle;overflow:hidden;}
+td.td-no{font-size:10px;color:#bbb;}
+td.td-name{text-align:left;padding-left:6px;font-size:12px;font-weight:500;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+td.td-sname{text-align:left;padding-left:6px;font-size:12px;font-weight:500;color:#185FA5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wc{border-radius:4px;padding:2px 3px;font-size:10px;line-height:1.3;display:block;width:100%;text-align:center;}
+.status-badge{font-size:10px;padding:2px 4px;border-radius:8px;display:inline-block;white-space:nowrap;}
+tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-align:left;font-weight:500;border-bottom:0.5px solid #ddd;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:1rem;width:300px;max-width:95vw;border:0.5px solid #ddd;margin-bottom:40px;}
+.modal h2{font-size:13px;font-weight:500;margin-bottom:0.7rem;color:#111;}
+.modal h3{font-size:10px;font-weight:500;color:#888;margin:0.6rem 0 0.25rem;text-transform:uppercase;letter-spacing:0.04em;}
+.fr{margin-bottom:0.45rem;}
+.fr label{font-size:11px;color:#666;display:block;margin-bottom:2px;}
+.fr select,.fr input[type=text]{width:100%;font-size:12px;padding:5px 6px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#111;}
+.modal-btns{display:flex;gap:6px;margin-top:0.7rem;}
+.mbtn-save{flex:1;padding:7px;font-size:12px;font-weight:500;border-radius:6px;border:none;background:#1D9E75;color:white;cursor:pointer;}
+.mbtn-blue{background:#185FA5!important;}
+.mbtn-red{background:#A32D2D!important;}
+.mbtn-cancel{padding:7px 10px;font-size:12px;border-radius:6px;border:0.5px solid #ccc;background:#fff;color:#555;cursor:pointer;}
+.smodal{width:330px;}
+.row-items{display:flex;flex-direction:column;gap:4px;margin-bottom:0.35rem;max-height:180px;overflow-y:auto;}
+.row-item{display:flex;align-items:center;gap:5px;}
+.row-item span{flex:1;font-size:11px;color:#111;}
+.row-item .idel{background:none;border:none;color:#c00;cursor:pointer;font-size:13px;padding:0 2px;}
+.row-add{display:flex;gap:4px;margin-top:0.25rem;align-items:center;}
+.row-add input[type=text]{flex:1;font-size:11px;padding:4px 6px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#111;}
+.row-add input[type=color]{width:30px;height:28px;border:0.5px solid #ccc;border-radius:4px;padding:1px;cursor:pointer;}
+.row-add button{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid #185FA5;color:#185FA5;background:#fff;cursor:pointer;white-space:nowrap;}
+.tag-list{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.35rem;}
+.tag-item{display:flex;align-items:center;gap:3px;background:#f5f5f5;border-radius:20px;padding:3px 7px;font-size:11px;color:#111;}
+.tag-del{background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;line-height:1;}
+.section-divider{border-top:0.5px solid #eee;margin:0.6rem 0 0.4rem;}
+.reset-info{font-size:11px;color:#666;background:#f5f5f5;border-radius:6px;padding:6px 10px;margin-bottom:0.6rem;line-height:1.7;}
+.holiday-update-box{background:#f5f5f5;border-radius:8px;padding:0.6rem 0.75rem;margin-bottom:0.4rem;}
+.hu-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.hu-info{font-size:11px;color:#666;line-height:1.5;}
+.hu-info b{color:#111;font-weight:500;}
+.hu-btn{font-size:11px;padding:5px 10px;border-radius:6px;border:0.5px solid #185FA5;color:#185FA5;background:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.hu-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.hu-status{font-size:10px;margin-top:5px;color:#666;}
+.hu-status.ok{color:#3B6D11;}.hu-status.err{color:#A32D2D;}.hu-status.loading{color:#854F0B;}
+@media print{
+  .no-print{display:none!important;}
+  .app{max-width:100%;padding:0;background:#fff;}
+  .tbl-wrap{border:1px solid #ccc;border-radius:0;}
+  .modal-bg{display:none!important;}
+  body{font-size:11px;background:#fff;}
+}
+</style></head><body>
+<div class="app">
+  <div class="hd no-print">
+    <div class="hd-l">
+      <div class="title">作業・出欠管理表</div>
+      <div class="date" id="today-label"></div>
+    </div>
+    <div class="hd-r">
+      <button class="btn btn-p" id="btn-export">📄 記録</button>
+      <button class="btn btn-s" id="btn-settings">⚙ 設定</button>
+      <button class="btn btn-r" id="btn-reset">リセット</button>
+    </div>
+  </div>
+  <div id="sync-bar" class="sync-bar sync-ing no-print">接続中...</div>
+  <div id="print-header" style="display:none;margin-bottom:8px;">
+    <div style="font-size:15px;font-weight:500;" id="ph-title"></div>
+    <div style="font-size:12px;color:#666;" id="ph-stats"></div>
+  </div>
+  <div class="holiday-banner" id="holiday-banner"></div>
+  <div class="stats" id="stats"></div>
+  <div class="legend" id="legend"></div>
+  <div class="tbl-wrap">
+    <table>
+      <colgroup><col class="c-no"><col class="c-name"><col class="c-st"><col class="c-am"><col class="c-pm"></colgroup>
+      <thead>
+        <tr><th>#</th><th class="th-name">氏名</th><th>状況</th><th>午前</th><th id="pm-header">午後</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 利用者編集 -->
+<div class="modal-bg no-print" id="edit-modal">
+  <div class="modal">
+    <h2 id="edit-title">状況を更新</h2>
+    <div class="fr"><label>出欠状況</label><select id="f-status"></select></div>
+    <h3>午前の作業</h3>
+    <div class="fr"><select id="f-am-work"></select></div>
+    <div id="f-am-loc-wrap" class="fr" style="display:none"><label>草刈場所</label><select id="f-am-loc"></select></div>
+    <div id="f-pm-section">
+      <h3>午後の作業</h3>
+      <div class="fr"><select id="f-pm-work"></select></div>
+      <div id="f-pm-loc-wrap" class="fr" style="display:none"><label>草刈場所</label><select id="f-pm-loc"></select></div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="edit-cancel">キャンセル</button>
+      <button class="mbtn-save" id="edit-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 職員編集 -->
+<div class="modal-bg no-print" id="staff-edit-modal">
+  <div class="modal">
+    <h2 id="staff-edit-title">職員の状況を更新</h2>
+    <div class="fr"><label>出勤状況</label><select id="sf-status"></select></div>
+    <h3>午前の作業</h3>
+    <div class="fr"><select id="sf-am-work"></select></div>
+    <div id="sf-am-loc-wrap" class="fr" style="display:none"><label>草刈場所</label><select id="sf-am-loc"></select></div>
+    <div id="sf-pm-section">
+      <h3>午後の作業</h3>
+      <div class="fr"><select id="sf-pm-work"></select></div>
+      <div id="sf-pm-loc-wrap" class="fr" style="display:none"><label>草刈場所</label><select id="sf-pm-loc"></select></div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="staff-edit-cancel">キャンセル</button>
+      <button class="mbtn-save" id="staff-edit-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 記録 -->
+<div class="modal-bg no-print" id="export-modal">
+  <div class="modal">
+    <h2>📄 記録として保存</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:0.8rem;line-height:1.6">その日の状況を記録として残せます。</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="mbtn-save mbtn-blue" id="btn-print">🖨 印刷（紙として残す）</button>
+      <button class="mbtn-save" id="btn-csv">📊 CSVダウンロード（Excel用）</button>
+      <button class="mbtn-save" style="background:#534AB7" id="btn-txt">📋 テキストコピー</button>
+    </div>
+    <div class="modal-btns" style="margin-top:0.6rem;">
+      <button class="mbtn-cancel" id="export-cancel">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- リセット確認 -->
+<div class="modal-bg no-print" id="reset-modal">
+  <div class="modal">
+    <h2>リセット確認</h2>
+    <div class="reset-info">
+      ✓ 消えるもの：出欠状況・午前午後の作業内容<br>
+      ✓ 残るもの：氏名・作業種類・草刈場所・職員
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="reset-cancel">キャンセル</button>
+      <button class="mbtn-save mbtn-red" id="reset-confirm">リセット実行</button>
+    </div>
+  </div>
+</div>
+
+<!-- 設定 -->
+<div class="modal-bg no-print" id="settings-modal">
+  <div class="modal smodal">
+    <h2>⚙ 設定</h2>
+    <h3>祝日データ</h3>
+    <div class="holiday-update-box">
+      <div class="hu-row">
+        <div class="hu-info"><b id="holiday-count-label">読み込み済み</b><br>最終更新：<span id="holiday-updated-at">内蔵データ</span></div>
+        <button class="hu-btn" id="btn-fetch-holidays">🔄 今すぐ更新</button>
+      </div>
+      <div class="hu-status" id="hu-status"></div>
+    </div>
+    <p style="font-size:10px;color:#aaa;margin-bottom:0.3rem;line-height:1.5">内閣府の公式データから自動取得。年に1〜2回更新してください。</p>
+    <div class="section-divider"></div>
+    <h3>作業内容</h3>
+    <div class="row-items" id="work-type-list"></div>
+    <div class="row-add">
+      <input type="color" id="new-work-color" value="#9FE1CB">
+      <input type="text" id="new-work-name" placeholder="作業名">
+      <button id="add-work-btn">追加</button>
+    </div>
+    <div class="section-divider"></div>
+    <h3>草刈場所</h3>
+    <div class="tag-list" id="grass-tag-list"></div>
+    <div class="row-add">
+      <input type="text" id="new-loc-input" placeholder="場所名">
+      <button id="add-loc-btn">追加</button>
+    </div>
+    <div class="section-divider"></div>
+    <h3>利用者（最大30名）</h3>
+    <div class="row-items" id="user-list-s"></div>
+    <div class="row-add">
+      <input type="text" id="new-user-input" placeholder="氏名">
+      <button id="add-user-btn">追加</button>
+    </div>
+    <div class="section-divider"></div>
+    <h3>職員</h3>
+    <div class="row-items" id="staff-list-s"></div>
+    <div class="row-add">
+      <input type="text" id="new-staff-input" placeholder="職員名">
+      <button id="add-staff-btn">追加</button>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-save mbtn-blue" id="settings-close">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ═══════════════════════════════════════════
+// Firebase設定（スクリーンショットから取得）
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAjLTpjLrwH3qcXF8BqXFYn-NqdWVZVkc8",
+  authDomain: "kanri-nisshi.firebaseapp.com",
+  databaseURL: "https://kanri-nisshi-default-rtdb.firebaseio.com",
+  projectId: "kanri-nisshi",
+  storageBucket: "kanri-nisshi.firebasestorage.app",
+  messagingSenderId: "208289949064",
+  appId: "1:208289949064:web:2d197616c79ce34f0dc63d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── 祝日 ──────────────────────────────────
+let holidaySet = new Set([
+  "2025-01-01","2025-01-13","2025-02-11","2025-02-23","2025-02-24",
+  "2025-03-20","2025-04-29","2025-05-03","2025-05-04","2025-05-05",
+  "2025-05-06","2025-07-21","2025-08-11","2025-09-15","2025-09-23",
+  "2025-10-13","2025-11-03","2025-11-23","2025-11-24",
+  "2026-01-01","2026-01-12","2026-02-11","2026-02-23","2026-03-20",
+  "2026-04-29","2026-05-03","2026-05-04","2026-05-05","2026-05-06",
+  "2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23",
+  "2026-10-12","2026-11-03","2026-11-23","2026-12-23",
+]);
+let holidayUpdatedAt = "内蔵データ（2025-2026）";
+
+function todayStr(){
+  const d=new Date();
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isHalfDayOnly(){
+  const d=new Date(); return d.getDay()===6||holidaySet.has(todayStr());
+}
+
+async function fetchHolidays(){
+  const btn=document.getElementById("btn-fetch-holidays");
+  const statusEl=document.getElementById("hu-status");
+  btn.disabled=true; btn.textContent="取得中...";
+  statusEl.className="hu-status loading"; statusEl.textContent="内閣府サーバーに接続中...";
+  const PROXY="https://corsproxy.io/?";
+  const TARGET="https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv";
+  try {
+    const res=await fetch(PROXY+encodeURIComponent(TARGET),{signal:AbortSignal.timeout(10000)});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const buf=await res.arrayBuffer();
+    const text=new TextDecoder("shift-jis").decode(buf);
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    const newSet=new Set(); let count=0;
+    for(const line of lines){
+      const cols=line.split(","); if(!cols[0])continue;
+      const m=cols[0].trim().match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+      if(!m)continue;
+      newSet.add(`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`);
+      count++;
+    }
+    if(count<10)throw new Error("データが少なすぎます");
+    holidaySet=newSet;
+    const now=new Date();
+    holidayUpdatedAt=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    document.getElementById("holiday-count-label").textContent=`${count}件の祝日を読み込み済み`;
+    document.getElementById("holiday-updated-at").textContent=holidayUpdatedAt;
+    statusEl.className="hu-status ok"; statusEl.textContent=`✓ 更新完了！ ${count}件取得しました`;
+    render();
+  } catch(e){
+    statusEl.className="hu-status err"; statusEl.textContent=`✗ 取得失敗：${e.message}`;
+  } finally { btn.disabled=false; btn.textContent="🔄 今すぐ更新"; }
+}
+
+// ── デフォルトデータ ───────────────────────
+const DEFAULT_WORK_TYPES=[
+  {id:"none",name:"―",color:"transparent",textColor:"#888"},
+  {id:"park",name:"公園",color:"#C0DD97",textColor:"#27500A"},
+  {id:"flower",name:"造花",color:"#F4C0D1",textColor:"#72243E"},
+  {id:"wire",name:"鉄線",color:"#B5D4F4",textColor:"#0C447C"},
+  {id:"factory",name:"工場",color:"#FAC775",textColor:"#633806"},
+  {id:"grass",name:"草刈",color:"#9FE1CB",textColor:"#085041"},
+];
+const DEFAULT_GRASS=["和田島","高架下","ナノミスト","応神","小松島宿舎"];
+const DEFAULT_STAFF=["福山","上井","新川"];
+const DEFAULT_MEMBERS=["大津 英明","新居 修","井上 優子","中村 初美","岩谷 忠明","黒川 智広","菖蒲 健太郎","西岡 昌哉","川田 公昭","大宗 秀剛","木内 裕之"];
+
+// ── ローカル状態 ───────────────────────────
+let workTypes=[...DEFAULT_WORK_TYPES];
+let grassLocations=[...DEFAULT_GRASS];
+let members=[];
+let staffMembers=[];
+let editingId=null, editingStaffId=null;
+let nextId=500;
+let fbReady=false;
+
+// ── Firebase リアルタイム同期 ──────────────
+const rootRef=ref(db,"kanri");
+const syncBar=document.getElementById("sync-bar");
+
+onValue(rootRef,(snapshot)=>{
+  const data=snapshot.val();
+  if(!data){
+    // 初回：デフォルトデータをFirebaseに書き込む
+    const initMembers=DEFAULT_MEMBERS.map((name,i)=>({id:i,name,isStaff:false,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""}));
+    const initStaff=DEFAULT_STAFF.map((name,i)=>({id:100+i,name,isStaff:true,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""}));
+    set(rootRef,{
+      workTypes:DEFAULT_WORK_TYPES,
+      grassLocations:DEFAULT_GRASS,
+      members:initMembers,
+      staffMembers:initStaff,
+    });
+    return;
+  }
+  // Firebaseのデータをローカルに反映
+  workTypes=data.workTypes||[...DEFAULT_WORK_TYPES];
+  grassLocations=data.grassLocations||[...DEFAULT_GRASS];
+  members=(data.members||[]).filter(Boolean);
+  staffMembers=(data.staffMembers||[]).filter(Boolean);
+  fbReady=true;
+  syncBar.className="sync-bar sync-ok no-print";
+  syncBar.textContent="✓ リアルタイム同期中 — 変更はすぐ全員に反映されます";
+  render();
+},(error)=>{
+  syncBar.className="sync-bar sync-err no-print";
+  syncBar.textContent="✗ 接続エラー — オフラインの可能性があります";
+});
+
+// Firebase保存ヘルパー
+function saveAll(){
+  if(!fbReady)return;
+  set(rootRef,{workTypes,grassLocations,members,staffMembers});
+}
+function saveMember(m){
+  if(!fbReady)return;
+  const idx=members.findIndex(x=>x.id===m.id);
+  if(idx>=0) update(ref(db,`kanri/members/${idx}`),m);
+}
+function saveStaffMember(m){
+  if(!fbReady)return;
+  const idx=staffMembers.findIndex(x=>x.id===m.id);
+  if(idx>=0) update(ref(db,`kanri/staffMembers/${idx}`),m);
+}
+
+// ── 表示ロジック ──────────────────────────
+const USER_STATUS_NORMAL=[{v:"attend",label:"出席"},{v:"half-am",label:"半日（午前のみ）"},{v:"half-pm",label:"半日（午後のみ）"},{v:"absent",label:"欠席"}];
+const USER_STATUS_HALFDAY=[{v:"attend",label:"出席（午前）"},{v:"absent",label:"欠席"}];
+const STAFF_STATUS_NORMAL=[{v:"attend",label:"出勤"},{v:"half-am",label:"半日（午前のみ）"},{v:"half-pm",label:"半日（午後のみ）"},{v:"absent",label:"欠勤"}];
+const STAFF_STATUS_HALFDAY=[{v:"attend",label:"出勤（午前）"},{v:"absent",label:"欠勤"}];
+const USER_BADGE={attend:"background:#EAF3DE;color:#3B6D11;",absent:"background:#F7C1C1;color:#791F1F;","half-am":"background:#E1F5EE;color:#0F6E56;","half-pm":"background:#E6F1FB;color:#185FA5;"};
+const USER_BADGE_LABEL={attend:"出席",absent:"欠席","half-am":"午前","half-pm":"午後"};
+const STAFF_BADGE={attend:"background:#E6F1FB;color:#185FA5;",absent:"background:#F7C1C1;color:#791F1F;","half-am":"background:#E1F5EE;color:#0F6E56;","half-pm":"background:#EEEDFE;color:#3C3489;"};
+const STAFF_BADGE_LABEL={attend:"出勤",absent:"欠勤","half-am":"午前","half-pm":"午後"};
+
+function contrastText(hex){
+  if(!hex||hex==="transparent")return"#666";
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000>128?"#1a1a1a":"#f5f5f5";
+}
+function todayLabel(){
+  const d=new Date();
+  const wd=["日","月","火","水","木","金","土"][d.getDay()];
+  let s=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${wd}）`;
+  if(holidaySet.has(todayStr()))s+=" 祝日"; return s;
+}
+function wCellHTML(wid,loc,status,period,isStaff){
+  const hd=isHalfDayOnly();
+  if(hd&&period==="pm")return`<span class="wc" style="color:#ccc;font-size:10px">閉所</span>`;
+  if(status==="absent")return`<span class="wc" style="background:#F7C1C1;color:#791F1F">${isStaff?"欠勤":"欠席"}</span>`;
+  if(status==="half-am"&&period==="pm")return`<span class="wc" style="background:#FAEEDA;color:#854F0B">―</span>`;
+  if(status==="half-pm"&&period==="am")return`<span class="wc" style="background:#FAEEDA;color:#854F0B">―</span>`;
+  const w=workTypes.find(x=>x.id===wid)||workTypes[0];
+  if(!wid||wid==="none")return`<span class="wc" style="color:#aaa">―</span>`;
+  let txt=w.name;
+  if(w.name==="草刈"&&loc)txt+=`<br><span style="font-size:9px">${loc}</span>`;
+  return`<span class="wc" style="background:${w.color};color:${w.textColor}">${txt}</span>`;
+}
+
+function render(){
+  const hd=isHalfDayOnly();
+  const banner=document.getElementById("holiday-banner");
+  if(hd){banner.style.display="block";banner.textContent=new Date().getDay()===6?"本日は土曜日のため午前のみ開所です":"本日は祝日のため午前のみ開所です";}
+  else banner.style.display="none";
+  document.getElementById("pm-header").textContent=hd?"午後(閉所)":"午後";
+  document.getElementById("pm-header").style.color=hd?"#ccc":"";
+  const att=members.filter(m=>m.status!=="absent").length;
+  const abs=members.filter(m=>m.status==="absent").length;
+  document.getElementById("stats").innerHTML=
+    `<div class="sc at">出席 <b>${att}</b>名</div><div class="sc ab">欠席 <b>${abs}</b>名</div><div class="sc tt">登録 <b>${members.length}</b>名</div>`;
+  document.getElementById("legend").innerHTML=
+    workTypes.filter(w=>w.id!=="none").map(w=>`<div class="lg"><div class="lgd" style="background:${w.color};border:0.5px solid ${w.textColor}44"></div>${w.name}</div>`).join("")+
+    `<div class="lg"><div class="lgd" style="background:#F7C1C1"></div>欠席/欠勤</div>`+
+    (!hd?`<div class="lg"><div class="lgd" style="background:#FAEEDA"></div>半日</div>`:"");
+  let rows=`<tr class="divider"><td colspan="5">利用者（${members.length}名）</td></tr>`;
+  members.forEach((m,i)=>{
+    const isAbs=m.status==="absent";
+    rows+=`<tr class="${isAbs?"row-abs":""}" data-id="${m.id}" data-type="user">
+      <td class="td-no">${i+1}</td><td class="td-name">${m.name}</td>
+      <td><span class="status-badge" style="${USER_BADGE[m.status]||USER_BADGE.attend}">${USER_BADGE_LABEL[m.status]||"出席"}</span></td>
+      <td>${wCellHTML(m.amWork,m.amLoc,m.status,"am",false)}</td>
+      <td>${wCellHTML(m.pmWork,m.pmLoc,m.status,"pm",false)}</td>
+    </tr>`;
+  });
+  rows+=`<tr class="divider"><td colspan="5">職員（${staffMembers.length}名）</td></tr>`;
+  staffMembers.forEach(m=>{
+    const isAbs=m.status==="absent";
+    rows+=`<tr class="${isAbs?"row-abs":""}" data-id="${m.id}" data-type="staff">
+      <td class="td-no" style="color:#185FA5">指</td><td class="td-sname">${m.name}</td>
+      <td><span class="status-badge" style="${STAFF_BADGE[m.status]||STAFF_BADGE.attend}">${STAFF_BADGE_LABEL[m.status]||"出勤"}</span></td>
+      <td>${wCellHTML(m.amWork,m.amLoc,m.status,"am",true)}</td>
+      <td>${wCellHTML(m.pmWork,m.pmLoc,m.status,"pm",true)}</td>
+    </tr>`;
+  });
+  const tbody=document.getElementById("tbody");
+  tbody.innerHTML=rows;
+  tbody.querySelectorAll("tr[data-id]").forEach(tr=>{
+    tr.addEventListener("click",()=>tr.dataset.type==="staff"?openStaffEdit(+tr.dataset.id):openEdit(+tr.dataset.id));
+  });
+}
+
+function buildWorkOpts(sel){return workTypes.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${w.name}</option>`).join("");}
+function buildLocOpts(sel){return grassLocations.map(l=>`<option value="${l}"${l===sel?" selected":""}>${l}</option>`).join("");}
+function buildStatusOpts(list,sel){return list.map(s=>`<option value="${s.v}"${s.v===sel?" selected":""}>${s.label}</option>`).join("");}
+
+function toggleGrass(){
+  document.getElementById("f-am-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("f-am-work").value)?.name==="草刈"?"block":"none";
+  document.getElementById("f-pm-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("f-pm-work").value)?.name==="草刈"?"block":"none";
+}
+function togglePm(){
+  const st=document.getElementById("f-status").value;
+  document.getElementById("f-pm-section").style.display=(isHalfDayOnly()||st==="half-am"||st==="absent")?"none":"block";
+}
+function openEdit(id){
+  editingId=id;
+  const m=members.find(x=>x.id===id); if(!m)return;
+  document.getElementById("edit-title").textContent=m.name+" の状況を更新";
+  document.getElementById("f-status").innerHTML=buildStatusOpts(isHalfDayOnly()?USER_STATUS_HALFDAY:USER_STATUS_NORMAL,m.status);
+  document.getElementById("f-am-work").innerHTML=buildWorkOpts(m.amWork);
+  document.getElementById("f-am-loc").innerHTML=buildLocOpts(m.amLoc);
+  document.getElementById("f-pm-work").innerHTML=buildWorkOpts(m.pmWork);
+  document.getElementById("f-pm-loc").innerHTML=buildLocOpts(m.pmLoc);
+  togglePm(); toggleGrass();
+  document.getElementById("edit-modal").classList.add("open");
+}
+document.getElementById("f-status").addEventListener("change",togglePm);
+document.getElementById("f-am-work").addEventListener("change",toggleGrass);
+document.getElementById("f-pm-work").addEventListener("change",toggleGrass);
+document.getElementById("edit-cancel").addEventListener("click",()=>document.getElementById("edit-modal").classList.remove("open"));
+document.getElementById("edit-modal").addEventListener("click",e=>{if(e.target===document.getElementById("edit-modal"))document.getElementById("edit-modal").classList.remove("open");});
+document.getElementById("edit-save").addEventListener("click",()=>{
+  const m=members.find(x=>x.id===editingId); if(!m)return;
+  m.status=document.getElementById("f-status").value;
+  m.amWork=document.getElementById("f-am-work").value;
+  m.amLoc=document.getElementById("f-am-loc").value;
+  const hidePm=isHalfDayOnly()||m.status==="half-am"||m.status==="absent";
+  m.pmWork=hidePm?"none":document.getElementById("f-pm-work").value;
+  m.pmLoc=hidePm?"":document.getElementById("f-pm-loc").value;
+  saveMember(m);
+  document.getElementById("edit-modal").classList.remove("open");
+});
+
+function toggleStaffGrass(){
+  document.getElementById("sf-am-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("sf-am-work").value)?.name==="草刈"?"block":"none";
+  document.getElementById("sf-pm-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("sf-pm-work").value)?.name==="草刈"?"block":"none";
+}
+function toggleStaffPm(){
+  const st=document.getElementById("sf-status").value;
+  document.getElementById("sf-pm-section").style.display=(isHalfDayOnly()||st==="half-am"||st==="absent")?"none":"block";
+}
+function openStaffEdit(id){
+  editingStaffId=id;
+  const m=staffMembers.find(x=>x.id===id); if(!m)return;
+  document.getElementById("staff-edit-title").textContent=m.name+" の状況を更新";
+  document.getElementById("sf-status").innerHTML=buildStatusOpts(isHalfDayOnly()?STAFF_STATUS_HALFDAY:STAFF_STATUS_NORMAL,m.status);
+  document.getElementById("sf-am-work").innerHTML=buildWorkOpts(m.amWork);
+  document.getElementById("sf-am-loc").innerHTML=buildLocOpts(m.amLoc);
+  document.getElementById("sf-pm-work").innerHTML=buildWorkOpts(m.pmWork);
+  document.getElementById("sf-pm-loc").innerHTML=buildLocOpts(m.pmLoc);
+  toggleStaffPm(); toggleStaffGrass();
+  document.getElementById("staff-edit-modal").classList.add("open");
+}
+document.getElementById("sf-status").addEventListener("change",toggleStaffPm);
+document.getElementById("sf-am-work").addEventListener("change",toggleStaffGrass);
+document.getElementById("sf-pm-work").addEventListener("change",toggleStaffGrass);
+document.getElementById("staff-edit-cancel").addEventListener("click",()=>document.getElementById("staff-edit-modal").classList.remove("open"));
+document.getElementById("staff-edit-modal").addEventListener("click",e=>{if(e.target===document.getElementById("staff-edit-modal"))document.getElementById("staff-edit-modal").classList.remove("open");});
+document.getElementById("staff-edit-save").addEventListener("click",()=>{
+  const m=staffMembers.find(x=>x.id===editingStaffId); if(!m)return;
+  m.status=document.getElementById("sf-status").value;
+  m.amWork=document.getElementById("sf-am-work").value;
+  m.amLoc=document.getElementById("sf-am-loc").value;
+  const hidePm=isHalfDayOnly()||m.status==="half-am"||m.status==="absent";
+  m.pmWork=hidePm?"none":document.getElementById("sf-pm-work").value;
+  m.pmLoc=hidePm?"":document.getElementById("sf-pm-loc").value;
+  saveStaffMember(m);
+  document.getElementById("staff-edit-modal").classList.remove("open");
+});
+
+document.getElementById("btn-reset").addEventListener("click",()=>document.getElementById("reset-modal").classList.add("open"));
+document.getElementById("reset-cancel").addEventListener("click",()=>document.getElementById("reset-modal").classList.remove("open"));
+document.getElementById("reset-confirm").addEventListener("click",()=>{
+  members.forEach(m=>{m.status="attend";m.amWork="none";m.amLoc="";m.pmWork="none";m.pmLoc="";});
+  staffMembers.forEach(m=>{m.status="attend";m.amWork="none";m.amLoc="";m.pmWork="none";m.pmLoc="";});
+  saveAll();
+  document.getElementById("reset-modal").classList.remove("open");
+});
+
+document.getElementById("btn-export").addEventListener("click",()=>document.getElementById("export-modal").classList.add("open"));
+document.getElementById("export-cancel").addEventListener("click",()=>document.getElementById("export-modal").classList.remove("open"));
+document.getElementById("export-modal").addEventListener("click",e=>{if(e.target===document.getElementById("export-modal"))document.getElementById("export-modal").classList.remove("open");});
+document.getElementById("btn-print").addEventListener("click",()=>{
+  document.getElementById("export-modal").classList.remove("open");
+  const ph=document.getElementById("print-header"); ph.style.display="block";
+  document.getElementById("ph-title").textContent="作業・出欠管理表　"+todayLabel();
+  document.getElementById("ph-stats").textContent=`出席${members.filter(m=>m.status!=="absent").length}名　欠席${members.filter(m=>m.status==="absent").length}名　登録${members.length}名`;
+  setTimeout(()=>{window.print(); ph.style.display="none";},100);
+});
+document.getElementById("btn-csv").addEventListener("click",()=>{
+  const hd=isHalfDayOnly();
+  const wn=id=>(workTypes.find(w=>w.id===id)||workTypes[0]).name;
+  const header=hd?["氏名","種別","状況","午前作業","午前場所"]:["氏名","種別","状況","午前作業","午前場所","午後作業","午後場所"];
+  const rows=[header];
+  members.forEach(m=>{const r=[m.name,"利用者",USER_BADGE_LABEL[m.status]||"出席",wn(m.amWork),m.amLoc||""];if(!hd)r.push(wn(m.pmWork),m.pmLoc||"");rows.push(r);});
+  staffMembers.forEach(m=>{const r=[m.name,"職員",STAFF_BADGE_LABEL[m.status]||"出勤",wn(m.amWork),m.amLoc||""];if(!hd)r.push(wn(m.pmWork),m.pmLoc||"");rows.push(r);});
+  const csv="\uFEFF"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`作業記録_${todayStr()}.csv`; a.click();
+  document.getElementById("export-modal").classList.remove("open");
+});
+document.getElementById("btn-txt").addEventListener("click",()=>{
+  const hd=isHalfDayOnly();
+  const wn=(id,loc)=>{const w=workTypes.find(x=>x.id===id)||workTypes[0];return w.name+(loc?`(${loc})`:"")}; 
+  let txt=`【作業・出欠記録】${todayLabel()}\n出席${members.filter(m=>m.status!=="absent").length}名 / 欠席${members.filter(m=>m.status==="absent").length}名\n\n■ 利用者\n`;
+  members.forEach((m,i)=>{
+    let line=`${i+1}. ${m.name}　${USER_BADGE_LABEL[m.status]||"出席"}　午前:${wn(m.amWork,m.amLoc)}`;
+    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc)}`;
+    txt+=line+"\n";
+  });
+  txt+="\n■ 職員\n";
+  staffMembers.forEach(m=>{
+    let line=`${m.name}　${STAFF_BADGE_LABEL[m.status]||"出勤"}　午前:${wn(m.amWork,m.amLoc)}`;
+    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc)}`;
+    txt+=line+"\n";
+  });
+  navigator.clipboard.writeText(txt).then(()=>alert("クリップボードにコピーしました！")).catch(()=>alert("コピーできませんでした。"));
+  document.getElementById("export-modal").classList.remove("open");
+});
+
+function renderSettings(){
+  document.getElementById("holiday-count-label").textContent=`${holidaySet.size}件の祝日を読み込み済み`;
+  document.getElementById("holiday-updated-at").textContent=holidayUpdatedAt;
+  document.getElementById("work-type-list").innerHTML=workTypes.filter(w=>w.id!=="none").map((w,i)=>
+    `<div class="row-item">
+      <div style="width:14px;height:14px;border-radius:3px;background:${w.color};border:0.5px solid ${w.textColor}44;flex-shrink:0"></div>
+      <span>${w.name}</span>
+      <input type="color" value="${w.color==="transparent"?"#cccccc":w.color}" data-wi="${i+1}" style="width:22px;height:20px;border:none;padding:0;cursor:pointer;border-radius:3px;">
+      <button class="idel" data-wdel="${i+1}">×</button>
+    </div>`).join("");
+  document.getElementById("grass-tag-list").innerHTML=grassLocations.map((l,i)=>
+    `<div class="tag-item">${l}<button class="tag-del" data-gi="${i}">×</button></div>`).join("");
+  document.getElementById("user-list-s").innerHTML=members.map((m,i)=>
+    `<div class="row-item"><span>${i+1}. ${m.name}</span><button class="idel" data-udel="${i}">×</button></div>`).join("");
+  document.getElementById("staff-list-s").innerHTML=staffMembers.map((m,i)=>
+    `<div class="row-item"><span>${m.name}</span><button class="idel" data-sdel="${i}">×</button></div>`).join("");
+
+  document.querySelectorAll("[data-wi]").forEach(inp=>{inp.addEventListener("change",()=>{workTypes[+inp.dataset.wi].color=inp.value;workTypes[+inp.dataset.wi].textColor=contrastText(inp.value);saveAll();renderSettings();});});
+  document.querySelectorAll("[data-wdel]").forEach(b=>b.addEventListener("click",()=>{workTypes.splice(+b.dataset.wdel,1);saveAll();renderSettings();}));
+  document.querySelectorAll(".tag-del").forEach(b=>b.addEventListener("click",()=>{grassLocations.splice(+b.dataset.gi,1);saveAll();renderSettings();}));
+  document.querySelectorAll("[data-udel]").forEach(b=>b.addEventListener("click",()=>{members.splice(+b.dataset.udel,1);saveAll();renderSettings();}));
+  document.querySelectorAll("[data-sdel]").forEach(b=>b.addEventListener("click",()=>{
+    staffMembers.splice(+b.dataset.sdel,1); saveAll(); renderSettings();
+  }));
+}
+
+document.getElementById("btn-fetch-holidays").addEventListener("click",fetchHolidays);
+document.getElementById("btn-settings").addEventListener("click",()=>{renderSettings();document.getElementById("settings-modal").classList.add("open");});
+document.getElementById("settings-close").addEventListener("click",()=>{document.getElementById("settings-modal").classList.remove("open");});
+document.getElementById("settings-modal").addEventListener("click",e=>{if(e.target===document.getElementById("settings-modal"))document.getElementById("settings-modal").classList.remove("open");});
+
+document.getElementById("add-work-btn").addEventListener("click",()=>{
+  const name=document.getElementById("new-work-name").value.trim();
+  const color=document.getElementById("new-work-color").value;
+  if(!name)return;
+  workTypes.push({id:"w_"+Date.now(),name,color,textColor:contrastText(color)});
+  document.getElementById("new-work-name").value=""; saveAll(); renderSettings();
+});
+document.getElementById("new-work-name").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-work-btn").click();});
+document.getElementById("add-loc-btn").addEventListener("click",()=>{
+  const v=document.getElementById("new-loc-input").value.trim();
+  if(v&&!grassLocations.includes(v)){grassLocations.push(v);document.getElementById("new-loc-input").value="";saveAll();renderSettings();}
+});
+document.getElementById("new-loc-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-loc-btn").click();});
+document.getElementById("add-user-btn").addEventListener("click",()=>{
+  const v=document.getElementById("new-user-input").value.trim();
+  if(!v)return;
+  if(members.length>=30){alert("利用者は30名までです");return;}
+  members.push({id:nextId++,name:v,isStaff:false,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""});
+  document.getElementById("new-user-input").value=""; saveAll(); renderSettings();
+});
+document.getElementById("new-user-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-user-btn").click();});
+document.getElementById("add-staff-btn").addEventListener("click",()=>{
+  const v=document.getElementById("new-staff-input").value.trim();
+  if(!v)return;
+  staffMembers.push({id:nextId++,name:v,isStaff:true,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""});
+  document.getElementById("new-staff-input").value=""; saveAll(); renderSettings();
+});
+document.getElementById("new-staff-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-staff-btn").click();});
+
+document.getElementById("today-label").textContent=todayLabel();
+</script>
+</body></html>
