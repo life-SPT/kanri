@@ -4,7 +4,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;font-size:13px;background:#f5f5f5;}
 .app{max-width:480px;margin:0 auto;padding:0.5rem;background:#f5f5f5;min-height:100vh;}
-.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;padding-bottom:0.5rem;border-bottom:0.5px solid #ddd;background:#f5f5f5;}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;padding-bottom:0.5rem;border-bottom:0.5px solid #ddd;}
 .hd-l .title{font-size:14px;font-weight:500;color:#111;}
 .hd-l .date{font-size:11px;color:#666;margin-top:1px;}
 .hd-r{display:flex;gap:5px;}
@@ -26,7 +26,7 @@ body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;font-size:13px;backgroun
 .lgd{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 .tbl-wrap{border:0.5px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;}
 table{width:100%;border-collapse:collapse;table-layout:fixed;}
-col.c-no{width:22px;}col.c-name{width:auto;}col.c-st{width:50px;}col.c-am{width:88px;}col.c-pm{width:88px;}
+col.c-no{width:22px;}col.c-name{width:auto;}col.c-st{width:50px;}col.c-am{width:82px;}col.c-pm{width:82px;}
 thead th{background:#f0f0f0;font-size:10px;font-weight:500;padding:4px 3px;text-align:center;border-bottom:0.5px solid #ddd;color:#666;white-space:nowrap;}
 th.th-name{text-align:left;padding-left:6px;}
 tbody tr{border-bottom:0.5px solid #eee;cursor:pointer;}
@@ -40,6 +40,13 @@ td.td-sname{text-align:left;padding-left:6px;font-size:12px;font-weight:500;colo
 .wc{border-radius:4px;padding:2px 3px;font-size:10px;line-height:1.3;display:block;width:100%;text-align:center;}
 .status-badge{font-size:10px;padding:2px 4px;border-radius:8px;display:inline-block;white-space:nowrap;}
 tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-align:left;font-weight:500;border-bottom:0.5px solid #ddd;}
+
+/* 名前横の作業色ドット */
+.work-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px;vertical-align:middle;flex-shrink:0;}
+
+/* 並び替えハンドル */
+
+
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:200;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
 .modal-bg.open{display:flex;}
 .modal{background:#fff;border-radius:12px;padding:1rem;width:300px;max-width:95vw;border:0.5px solid #ddd;margin-bottom:40px;}
@@ -54,10 +61,11 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
 .mbtn-red{background:#A32D2D!important;}
 .mbtn-cancel{padding:7px 10px;font-size:12px;border-radius:6px;border:0.5px solid #ccc;background:#fff;color:#555;cursor:pointer;}
 .smodal{width:330px;}
-.row-items{display:flex;flex-direction:column;gap:4px;margin-bottom:0.35rem;max-height:180px;overflow-y:auto;}
+.row-items{display:flex;flex-direction:column;gap:4px;margin-bottom:0.35rem;max-height:200px;overflow-y:auto;}
 .row-item{display:flex;align-items:center;gap:5px;}
 .row-item span{flex:1;font-size:11px;color:#111;}
 .row-item .idel{background:none;border:none;color:#c00;cursor:pointer;font-size:13px;padding:0 2px;}
+.row-item .imove{background:none;border:none;color:#aaa;cursor:ns-resize;font-size:14px;padding:0 2px;}
 .row-add{display:flex;gap:4px;margin-top:0.25rem;align-items:center;}
 .row-add input[type=text]{flex:1;font-size:11px;padding:4px 6px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#111;}
 .row-add input[type=color]{width:30px;height:28px;border:0.5px solid #ccc;border-radius:4px;padding:1px;cursor:pointer;}
@@ -75,6 +83,9 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
 .hu-btn:disabled{opacity:0.5;cursor:not-allowed;}
 .hu-status{font-size:10px;margin-top:5px;color:#666;}
 .hu-status.ok{color:#3B6D11;}.hu-status.err{color:#A32D2D;}.hu-status.loading{color:#854F0B;}
+.insert-pos{display:flex;align-items:center;gap:6px;margin-bottom:0.4rem;}
+.insert-pos label{font-size:11px;color:#666;}
+.insert-pos select{font-size:11px;padding:3px 5px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#111;flex:1;}
 @media print{
   .no-print{display:none!important;}
   .app{max-width:100%;padding:0;background:#fff;}
@@ -105,9 +116,9 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
   <div class="legend" id="legend"></div>
   <div class="tbl-wrap">
     <table>
-      <colgroup><col class="c-no"><col class="c-name"><col class="c-st"><col class="c-am"><col class="c-pm"></colgroup>
+      <colgroup><col style="width:22px"><col style="width:16px"><col><col style="width:50px"><col style="width:82px"><col style="width:82px"></colgroup>
       <thead>
-        <tr><th>#</th><th class="th-name">氏名</th><th>状況</th><th>午前</th><th id="pm-header">午後</th></tr>
+        <tr><th>#</th><th></th><th class="th-name">氏名</th><th>状況</th><th>午前</th><th id="pm-header">午後</th></tr>
       </thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -176,7 +187,7 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
     <h2>リセット確認</h2>
     <div class="reset-info">
       ✓ 消えるもの：出欠状況・午前午後の作業内容<br>
-      ✓ 残るもの：氏名・作業種類・草刈場所・職員
+      ✓ 残るもの：氏名・作業種類・草刈場所・職員・並び順
     </div>
     <div class="modal-btns">
       <button class="mbtn-cancel" id="reset-cancel">キャンセル</button>
@@ -216,9 +227,13 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
     <div class="section-divider"></div>
     <h3>利用者（最大30名）</h3>
     <div class="row-items" id="user-list-s"></div>
-    <div class="row-add">
-      <input type="text" id="new-user-input" placeholder="氏名">
-      <button id="add-user-btn">追加</button>
+    <div class="row-add" style="flex-wrap:wrap;gap:6px;">
+      <input type="text" id="new-user-input" placeholder="氏名" style="flex:1;min-width:100px;">
+      <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;width:100%;">
+        <span>追加位置：</span>
+        <select id="insert-pos-select" style="flex:1;font-size:11px;padding:3px 5px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#111;"></select>
+      </div>
+      <button id="add-user-btn" style="width:100%;">追加</button>
     </div>
     <div class="section-divider"></div>
     <h3>職員</h3>
@@ -233,14 +248,10 @@ tr.divider td{background:#f5f5f5;font-size:10px;color:#999;padding:3px 6px;text-
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ═══════════════════════════════════════════
-// Firebase設定（スクリーンショットから取得）
-// ═══════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyAjLTpjLrwH3qcXF8BqXFYn-NqdWVZVkc8",
   authDomain: "kanri-nisshi.firebaseapp.com",
@@ -250,7 +261,6 @@ const firebaseConfig = {
   messagingSenderId: "208289949064",
   appId: "1:208289949064:web:2d197616c79ce34f0dc63d"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -265,36 +275,25 @@ let holidaySet = new Set([
   "2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23",
   "2026-10-12","2026-11-03","2026-11-23","2026-12-23",
 ]);
-let holidayUpdatedAt = "内蔵データ（2025-2026）";
+let holidayUpdatedAt="内蔵データ（2025-2026）";
 
-function todayStr(){
-  const d=new Date();
-  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function isHalfDayOnly(){
-  const d=new Date(); return d.getDay()===6||holidaySet.has(todayStr());
-}
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function isHalfDayOnly(){const d=new Date();return d.getDay()===6||holidaySet.has(todayStr());}
 
 async function fetchHolidays(){
   const btn=document.getElementById("btn-fetch-holidays");
   const statusEl=document.getElementById("hu-status");
-  btn.disabled=true; btn.textContent="取得中...";
-  statusEl.className="hu-status loading"; statusEl.textContent="内閣府サーバーに接続中...";
-  const PROXY="https://corsproxy.io/?";
-  const TARGET="https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv";
-  try {
-    const res=await fetch(PROXY+encodeURIComponent(TARGET),{signal:AbortSignal.timeout(10000)});
+  btn.disabled=true;btn.textContent="取得中...";
+  statusEl.className="hu-status loading";statusEl.textContent="内閣府サーバーに接続中...";
+  try{
+    const res=await fetch("https://corsproxy.io/?"+encodeURIComponent("https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"),{signal:AbortSignal.timeout(10000)});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
-    const buf=await res.arrayBuffer();
-    const text=new TextDecoder("shift-jis").decode(buf);
-    const lines=text.split(/\r?\n/).filter(l=>l.trim());
-    const newSet=new Set(); let count=0;
-    for(const line of lines){
-      const cols=line.split(","); if(!cols[0])continue;
-      const m=cols[0].trim().match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    const text=new TextDecoder("shift-jis").decode(await res.arrayBuffer());
+    const newSet=new Set();let count=0;
+    for(const line of text.split(/\r?\n/).filter(l=>l.trim())){
+      const m=line.split(",")[0].trim().match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
       if(!m)continue;
-      newSet.add(`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`);
-      count++;
+      newSet.add(`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`);count++;
     }
     if(count<10)throw new Error("データが少なすぎます");
     holidaySet=newSet;
@@ -302,11 +301,10 @@ async function fetchHolidays(){
     holidayUpdatedAt=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     document.getElementById("holiday-count-label").textContent=`${count}件の祝日を読み込み済み`;
     document.getElementById("holiday-updated-at").textContent=holidayUpdatedAt;
-    statusEl.className="hu-status ok"; statusEl.textContent=`✓ 更新完了！ ${count}件取得しました`;
+    statusEl.className="hu-status ok";statusEl.textContent=`✓ 更新完了！ ${count}件取得しました`;
     render();
-  } catch(e){
-    statusEl.className="hu-status err"; statusEl.textContent=`✗ 取得失敗：${e.message}`;
-  } finally { btn.disabled=false; btn.textContent="🔄 今すぐ更新"; }
+  }catch(e){statusEl.className="hu-status err";statusEl.textContent=`✗ 取得失敗：${e.message}`;}
+  finally{btn.disabled=false;btn.textContent="🔄 今すぐ更新";}
 }
 
 // ── デフォルトデータ ───────────────────────
@@ -318,39 +316,40 @@ const DEFAULT_WORK_TYPES=[
   {id:"factory",name:"工場",color:"#FAC775",textColor:"#633806"},
   {id:"grass",name:"草刈",color:"#9FE1CB",textColor:"#085041"},
 ];
+// 職員用作業種類（造花・鉄線の代わりに事業所内）
+const DEFAULT_STAFF_WORK_TYPES=[
+  {id:"none",name:"―",color:"transparent",textColor:"#888"},
+  {id:"park",name:"公園",color:"#C0DD97",textColor:"#27500A"},
+  {id:"office",name:"事業所内",color:"#F4C0D1",textColor:"#72243E"},
+  {id:"factory",name:"工場",color:"#FAC775",textColor:"#633806"},
+  {id:"grass",name:"草刈",color:"#9FE1CB",textColor:"#085041"},
+];
 const DEFAULT_GRASS=["和田島","高架下","ナノミスト","応神","小松島宿舎"];
 const DEFAULT_STAFF=["福山","上井","新川"];
 const DEFAULT_MEMBERS=["大津 英明","新居 修","井上 優子","中村 初美","岩谷 忠明","黒川 智広","菖蒲 健太郎","西岡 昌哉","川田 公昭","大宗 秀剛","木内 裕之"];
 
-// ── ローカル状態 ───────────────────────────
 let workTypes=[...DEFAULT_WORK_TYPES];
+let staffWorkTypes=[...DEFAULT_STAFF_WORK_TYPES];
 let grassLocations=[...DEFAULT_GRASS];
 let members=[];
 let staffMembers=[];
-let editingId=null, editingStaffId=null;
+let editingId=null,editingStaffId=null;
 let nextId=500;
 let fbReady=false;
 
-// ── Firebase リアルタイム同期 ──────────────
 const rootRef=ref(db,"kanri");
 const syncBar=document.getElementById("sync-bar");
 
 onValue(rootRef,(snapshot)=>{
   const data=snapshot.val();
   if(!data){
-    // 初回：デフォルトデータをFirebaseに書き込む
     const initMembers=DEFAULT_MEMBERS.map((name,i)=>({id:i,name,isStaff:false,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""}));
     const initStaff=DEFAULT_STAFF.map((name,i)=>({id:100+i,name,isStaff:true,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""}));
-    set(rootRef,{
-      workTypes:DEFAULT_WORK_TYPES,
-      grassLocations:DEFAULT_GRASS,
-      members:initMembers,
-      staffMembers:initStaff,
-    });
+    set(rootRef,{workTypes:DEFAULT_WORK_TYPES,staffWorkTypes:DEFAULT_STAFF_WORK_TYPES,grassLocations:DEFAULT_GRASS,members:initMembers,staffMembers:initStaff});
     return;
   }
-  // Firebaseのデータをローカルに反映
   workTypes=data.workTypes||[...DEFAULT_WORK_TYPES];
+  staffWorkTypes=data.staffWorkTypes||[...DEFAULT_STAFF_WORK_TYPES];
   grassLocations=data.grassLocations||[...DEFAULT_GRASS];
   members=(data.members||[]).filter(Boolean);
   staffMembers=(data.staffMembers||[]).filter(Boolean);
@@ -363,31 +362,30 @@ onValue(rootRef,(snapshot)=>{
   syncBar.textContent="✗ 接続エラー — オフラインの可能性があります";
 });
 
-// Firebase保存ヘルパー
-function saveAll(){
-  if(!fbReady)return;
-  set(rootRef,{workTypes,grassLocations,members,staffMembers});
-}
+function saveAll(){if(!fbReady)return;set(rootRef,{workTypes,staffWorkTypes,grassLocations,members,staffMembers});}
 function saveMember(m){
   if(!fbReady)return;
   const idx=members.findIndex(x=>x.id===m.id);
-  if(idx>=0) update(ref(db,`kanri/members/${idx}`),m);
+  if(idx>=0)update(ref(db,`kanri/members/${idx}`),m);
 }
 function saveStaffMember(m){
   if(!fbReady)return;
   const idx=staffMembers.findIndex(x=>x.id===m.id);
-  if(idx>=0) update(ref(db,`kanri/staffMembers/${idx}`),m);
+  if(idx>=0)update(ref(db,`kanri/staffMembers/${idx}`),m);
 }
 
-// ── 表示ロジック ──────────────────────────
+// ── ステータス定義 ─────────────────────────
 const USER_STATUS_NORMAL=[{v:"attend",label:"出席"},{v:"half-am",label:"半日（午前のみ）"},{v:"half-pm",label:"半日（午後のみ）"},{v:"absent",label:"欠席"}];
 const USER_STATUS_HALFDAY=[{v:"attend",label:"出席（午前）"},{v:"absent",label:"欠席"}];
-const STAFF_STATUS_NORMAL=[{v:"attend",label:"出勤"},{v:"half-am",label:"半日（午前のみ）"},{v:"half-pm",label:"半日（午後のみ）"},{v:"absent",label:"欠勤"}];
-const STAFF_STATUS_HALFDAY=[{v:"attend",label:"出勤（午前）"},{v:"absent",label:"欠勤"}];
+// 職員：出勤と休の二択
+const STAFF_STATUS_NORMAL=[{v:"attend",label:"出勤"},{v:"half-am",label:"半日（午前のみ）"},{v:"half-pm",label:"半日（午後のみ）"},{v:"absent",label:"休"}];
+const STAFF_STATUS_HALFDAY=[{v:"attend",label:"出勤（午前）"},{v:"absent",label:"休"}];
+
 const USER_BADGE={attend:"background:#EAF3DE;color:#3B6D11;",absent:"background:#F7C1C1;color:#791F1F;","half-am":"background:#E1F5EE;color:#0F6E56;","half-pm":"background:#E6F1FB;color:#185FA5;"};
 const USER_BADGE_LABEL={attend:"出席",absent:"欠席","half-am":"午前","half-pm":"午後"};
 const STAFF_BADGE={attend:"background:#E6F1FB;color:#185FA5;",absent:"background:#F7C1C1;color:#791F1F;","half-am":"background:#E1F5EE;color:#0F6E56;","half-pm":"background:#EEEDFE;color:#3C3489;"};
-const STAFF_BADGE_LABEL={attend:"出勤",absent:"欠勤","half-am":"午前","half-pm":"午後"};
+// 職員バッジ：欠勤→休
+const STAFF_BADGE_LABEL={attend:"出勤",absent:"休","half-am":"午前","half-pm":"午後"};
 
 function contrastText(hex){
   if(!hex||hex==="transparent")return"#666";
@@ -398,20 +396,31 @@ function todayLabel(){
   const d=new Date();
   const wd=["日","月","火","水","木","金","土"][d.getDay()];
   let s=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${wd}）`;
-  if(holidaySet.has(todayStr()))s+=" 祝日"; return s;
+  if(holidaySet.has(todayStr()))s+=" 祝日";return s;
 }
+
+// 名前横のドット（午前の作業色）
+function workDotHTML(wid, wTypes){
+  const w=wTypes.find(x=>x.id===wid);
+  if(!w||w.id==="none"||w.color==="transparent")return"";
+  return`<span class="work-dot" style="background:${w.color};border:1px solid ${w.textColor}55"></span>`;
+}
+
 function wCellHTML(wid,loc,status,period,isStaff){
+  const wTypes=isStaff?staffWorkTypes:workTypes;
   const hd=isHalfDayOnly();
   if(hd&&period==="pm")return`<span class="wc" style="color:#ccc;font-size:10px">閉所</span>`;
-  if(status==="absent")return`<span class="wc" style="background:#F7C1C1;color:#791F1F">${isStaff?"欠勤":"欠席"}</span>`;
+  if(status==="absent")return`<span class="wc" style="background:#F7C1C1;color:#791F1F">${isStaff?"休":"欠席"}</span>`;
   if(status==="half-am"&&period==="pm")return`<span class="wc" style="background:#FAEEDA;color:#854F0B">―</span>`;
   if(status==="half-pm"&&period==="am")return`<span class="wc" style="background:#FAEEDA;color:#854F0B">―</span>`;
-  const w=workTypes.find(x=>x.id===wid)||workTypes[0];
+  const w=wTypes.find(x=>x.id===wid)||wTypes[0];
   if(!wid||wid==="none")return`<span class="wc" style="color:#aaa">―</span>`;
   let txt=w.name;
   if(w.name==="草刈"&&loc)txt+=`<br><span style="font-size:9px">${loc}</span>`;
   return`<span class="wc" style="background:${w.color};color:${w.textColor}">${txt}</span>`;
 }
+
+
 
 function render(){
   const hd=isHalfDayOnly();
@@ -426,66 +435,98 @@ function render(){
     `<div class="sc at">出席 <b>${att}</b>名</div><div class="sc ab">欠席 <b>${abs}</b>名</div><div class="sc tt">登録 <b>${members.length}</b>名</div>`;
   document.getElementById("legend").innerHTML=
     workTypes.filter(w=>w.id!=="none").map(w=>`<div class="lg"><div class="lgd" style="background:${w.color};border:0.5px solid ${w.textColor}44"></div>${w.name}</div>`).join("")+
-    `<div class="lg"><div class="lgd" style="background:#F7C1C1"></div>欠席/欠勤</div>`+
+    `<div class="lg"><div class="lgd" style="background:#F7C1C1"></div>欠席</div>`+
     (!hd?`<div class="lg"><div class="lgd" style="background:#FAEEDA"></div>半日</div>`:"");
-  let rows=`<tr class="divider"><td colspan="5">利用者（${members.length}名）</td></tr>`;
+
+  let rows=`<tr class="divider"><td colspan="6">利用者（${members.length}名）</td></tr>`;
   members.forEach((m,i)=>{
     const isAbs=m.status==="absent";
+    const dot=workDotHTML(m.amWork,workTypes);
     rows+=`<tr class="${isAbs?"row-abs":""}" data-id="${m.id}" data-type="user">
-      <td class="td-no">${i+1}</td><td class="td-name">${m.name}</td>
+      <td class="td-no">${i+1}</td>
+      <td style="text-align:center;padding:0 1px">${dot}</td>
+      <td class="td-name">${m.name}</td>
       <td><span class="status-badge" style="${USER_BADGE[m.status]||USER_BADGE.attend}">${USER_BADGE_LABEL[m.status]||"出席"}</span></td>
       <td>${wCellHTML(m.amWork,m.amLoc,m.status,"am",false)}</td>
       <td>${wCellHTML(m.pmWork,m.pmLoc,m.status,"pm",false)}</td>
     </tr>`;
   });
-  rows+=`<tr class="divider"><td colspan="5">職員（${staffMembers.length}名）</td></tr>`;
+
+  rows+=`<tr class="divider"><td colspan="6">職員（${staffMembers.length}名）</td></tr>`;
   staffMembers.forEach(m=>{
     const isAbs=m.status==="absent";
+    const sdot=workDotHTML(m.amWork,staffWorkTypes);
     rows+=`<tr class="${isAbs?"row-abs":""}" data-id="${m.id}" data-type="staff">
-      <td class="td-no" style="color:#185FA5">指</td><td class="td-sname">${m.name}</td>
+      <td class="td-no"></td>
+      <td style="text-align:center;padding:0">${sdot}</td>
+      <td class="td-sname">${m.name}</td>
       <td><span class="status-badge" style="${STAFF_BADGE[m.status]||STAFF_BADGE.attend}">${STAFF_BADGE_LABEL[m.status]||"出勤"}</span></td>
       <td>${wCellHTML(m.amWork,m.amLoc,m.status,"am",true)}</td>
       <td>${wCellHTML(m.pmWork,m.pmLoc,m.status,"pm",true)}</td>
     </tr>`;
   });
+
   const tbody=document.getElementById("tbody");
   tbody.innerHTML=rows;
   tbody.querySelectorAll("tr[data-id]").forEach(tr=>{
-    tr.addEventListener("click",()=>tr.dataset.type==="staff"?openStaffEdit(+tr.dataset.id):openEdit(+tr.dataset.id));
+    tr.addEventListener("click",()=>{
+      tr.dataset.type==="staff"?openStaffEdit(+tr.dataset.id):openEdit(+tr.dataset.id);
+    });
   });
 }
 
-function buildWorkOpts(sel){return workTypes.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${w.name}</option>`).join("");}
+// ── 利用者編集 ────────────────────────────
+function buildWorkOpts(sel,wTypes){return wTypes.map(w=>`<option value="${w.id}"${w.id===sel?" selected":""}>${w.name}</option>`).join("");}
 function buildLocOpts(sel){return grassLocations.map(l=>`<option value="${l}"${l===sel?" selected":""}>${l}</option>`).join("");}
 function buildStatusOpts(list,sel){return list.map(s=>`<option value="${s.v}"${s.v===sel?" selected":""}>${s.label}</option>`).join("");}
 
+function isGrassWork(wid,wTypes){return(wTypes.find(w=>w.id===wid)||{}).name==="草刈";}
+
 function toggleGrass(){
-  document.getElementById("f-am-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("f-am-work").value)?.name==="草刈"?"block":"none";
-  document.getElementById("f-pm-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("f-pm-work").value)?.name==="草刈"?"block":"none";
+  document.getElementById("f-am-loc-wrap").style.display=isGrassWork(document.getElementById("f-am-work").value,workTypes)?"block":"none";
+  document.getElementById("f-pm-loc-wrap").style.display=isGrassWork(document.getElementById("f-pm-work").value,workTypes)?"block":"none";
 }
 function togglePm(){
   const st=document.getElementById("f-status").value;
   document.getElementById("f-pm-section").style.display=(isHalfDayOnly()||st==="half-am"||st==="absent")?"none":"block";
 }
+// 午前変更時に午後を自動セット
+function onAmWorkChange(){
+  const amVal=document.getElementById("f-am-work").value;
+  const amLoc=document.getElementById("f-am-loc").value;
+  document.getElementById("f-pm-work").value=amVal;
+  if(isGrassWork(amVal,workTypes)){
+    document.getElementById("f-pm-loc-wrap").style.display="block";
+    document.getElementById("f-pm-loc").value=amLoc;
+  }else{
+    document.getElementById("f-pm-loc-wrap").style.display="none";
+  }
+  toggleGrass();
+}
+function onAmLocChange(){
+  document.getElementById("f-pm-loc").value=document.getElementById("f-am-loc").value;
+}
+
 function openEdit(id){
   editingId=id;
-  const m=members.find(x=>x.id===id); if(!m)return;
+  const m=members.find(x=>x.id===id);if(!m)return;
   document.getElementById("edit-title").textContent=m.name+" の状況を更新";
   document.getElementById("f-status").innerHTML=buildStatusOpts(isHalfDayOnly()?USER_STATUS_HALFDAY:USER_STATUS_NORMAL,m.status);
-  document.getElementById("f-am-work").innerHTML=buildWorkOpts(m.amWork);
+  document.getElementById("f-am-work").innerHTML=buildWorkOpts(m.amWork,workTypes);
   document.getElementById("f-am-loc").innerHTML=buildLocOpts(m.amLoc);
-  document.getElementById("f-pm-work").innerHTML=buildWorkOpts(m.pmWork);
+  document.getElementById("f-pm-work").innerHTML=buildWorkOpts(m.pmWork,workTypes);
   document.getElementById("f-pm-loc").innerHTML=buildLocOpts(m.pmLoc);
-  togglePm(); toggleGrass();
+  togglePm();toggleGrass();
   document.getElementById("edit-modal").classList.add("open");
 }
 document.getElementById("f-status").addEventListener("change",togglePm);
-document.getElementById("f-am-work").addEventListener("change",toggleGrass);
+document.getElementById("f-am-work").addEventListener("change",onAmWorkChange);
+document.getElementById("f-am-loc").addEventListener("change",onAmLocChange);
 document.getElementById("f-pm-work").addEventListener("change",toggleGrass);
 document.getElementById("edit-cancel").addEventListener("click",()=>document.getElementById("edit-modal").classList.remove("open"));
 document.getElementById("edit-modal").addEventListener("click",e=>{if(e.target===document.getElementById("edit-modal"))document.getElementById("edit-modal").classList.remove("open");});
 document.getElementById("edit-save").addEventListener("click",()=>{
-  const m=members.find(x=>x.id===editingId); if(!m)return;
+  const m=members.find(x=>x.id===editingId);if(!m)return;
   m.status=document.getElementById("f-status").value;
   m.amWork=document.getElementById("f-am-work").value;
   m.amLoc=document.getElementById("f-am-loc").value;
@@ -496,33 +537,51 @@ document.getElementById("edit-save").addEventListener("click",()=>{
   document.getElementById("edit-modal").classList.remove("open");
 });
 
+// ── 職員編集 ──────────────────────────────
 function toggleStaffGrass(){
-  document.getElementById("sf-am-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("sf-am-work").value)?.name==="草刈"?"block":"none";
-  document.getElementById("sf-pm-loc-wrap").style.display=workTypes.find(w=>w.id===document.getElementById("sf-pm-work").value)?.name==="草刈"?"block":"none";
+  document.getElementById("sf-am-loc-wrap").style.display=isGrassWork(document.getElementById("sf-am-work").value,staffWorkTypes)?"block":"none";
+  document.getElementById("sf-pm-loc-wrap").style.display=isGrassWork(document.getElementById("sf-pm-work").value,staffWorkTypes)?"block":"none";
 }
 function toggleStaffPm(){
   const st=document.getElementById("sf-status").value;
   document.getElementById("sf-pm-section").style.display=(isHalfDayOnly()||st==="half-am"||st==="absent")?"none":"block";
 }
+function onSfAmWorkChange(){
+  const amVal=document.getElementById("sf-am-work").value;
+  const amLoc=document.getElementById("sf-am-loc").value;
+  document.getElementById("sf-pm-work").value=amVal;
+  if(isGrassWork(amVal,staffWorkTypes)){
+    document.getElementById("sf-pm-loc-wrap").style.display="block";
+    document.getElementById("sf-pm-loc").value=amLoc;
+  }else{
+    document.getElementById("sf-pm-loc-wrap").style.display="none";
+  }
+  toggleStaffGrass();
+}
+function onSfAmLocChange(){
+  document.getElementById("sf-pm-loc").value=document.getElementById("sf-am-loc").value;
+}
+
 function openStaffEdit(id){
   editingStaffId=id;
-  const m=staffMembers.find(x=>x.id===id); if(!m)return;
+  const m=staffMembers.find(x=>x.id===id);if(!m)return;
   document.getElementById("staff-edit-title").textContent=m.name+" の状況を更新";
   document.getElementById("sf-status").innerHTML=buildStatusOpts(isHalfDayOnly()?STAFF_STATUS_HALFDAY:STAFF_STATUS_NORMAL,m.status);
-  document.getElementById("sf-am-work").innerHTML=buildWorkOpts(m.amWork);
+  document.getElementById("sf-am-work").innerHTML=buildWorkOpts(m.amWork,staffWorkTypes);
   document.getElementById("sf-am-loc").innerHTML=buildLocOpts(m.amLoc);
-  document.getElementById("sf-pm-work").innerHTML=buildWorkOpts(m.pmWork);
+  document.getElementById("sf-pm-work").innerHTML=buildWorkOpts(m.pmWork,staffWorkTypes);
   document.getElementById("sf-pm-loc").innerHTML=buildLocOpts(m.pmLoc);
-  toggleStaffPm(); toggleStaffGrass();
+  toggleStaffPm();toggleStaffGrass();
   document.getElementById("staff-edit-modal").classList.add("open");
 }
 document.getElementById("sf-status").addEventListener("change",toggleStaffPm);
-document.getElementById("sf-am-work").addEventListener("change",toggleStaffGrass);
+document.getElementById("sf-am-work").addEventListener("change",onSfAmWorkChange);
+document.getElementById("sf-am-loc").addEventListener("change",onSfAmLocChange);
 document.getElementById("sf-pm-work").addEventListener("change",toggleStaffGrass);
 document.getElementById("staff-edit-cancel").addEventListener("click",()=>document.getElementById("staff-edit-modal").classList.remove("open"));
 document.getElementById("staff-edit-modal").addEventListener("click",e=>{if(e.target===document.getElementById("staff-edit-modal"))document.getElementById("staff-edit-modal").classList.remove("open");});
 document.getElementById("staff-edit-save").addEventListener("click",()=>{
-  const m=staffMembers.find(x=>x.id===editingStaffId); if(!m)return;
+  const m=staffMembers.find(x=>x.id===editingStaffId);if(!m)return;
   m.status=document.getElementById("sf-status").value;
   m.amWork=document.getElementById("sf-am-work").value;
   m.amLoc=document.getElementById("sf-am-loc").value;
@@ -533,6 +592,7 @@ document.getElementById("staff-edit-save").addEventListener("click",()=>{
   document.getElementById("staff-edit-modal").classList.remove("open");
 });
 
+// ── リセット ──────────────────────────────
 document.getElementById("btn-reset").addEventListener("click",()=>document.getElementById("reset-modal").classList.add("open"));
 document.getElementById("reset-cancel").addEventListener("click",()=>document.getElementById("reset-modal").classList.remove("open"));
 document.getElementById("reset-confirm").addEventListener("click",()=>{
@@ -542,50 +602,61 @@ document.getElementById("reset-confirm").addEventListener("click",()=>{
   document.getElementById("reset-modal").classList.remove("open");
 });
 
+// ── 記録 ──────────────────────────────────
 document.getElementById("btn-export").addEventListener("click",()=>document.getElementById("export-modal").classList.add("open"));
 document.getElementById("export-cancel").addEventListener("click",()=>document.getElementById("export-modal").classList.remove("open"));
 document.getElementById("export-modal").addEventListener("click",e=>{if(e.target===document.getElementById("export-modal"))document.getElementById("export-modal").classList.remove("open");});
 document.getElementById("btn-print").addEventListener("click",()=>{
   document.getElementById("export-modal").classList.remove("open");
-  const ph=document.getElementById("print-header"); ph.style.display="block";
+  const ph=document.getElementById("print-header");ph.style.display="block";
   document.getElementById("ph-title").textContent="作業・出欠管理表　"+todayLabel();
   document.getElementById("ph-stats").textContent=`出席${members.filter(m=>m.status!=="absent").length}名　欠席${members.filter(m=>m.status==="absent").length}名　登録${members.length}名`;
-  setTimeout(()=>{window.print(); ph.style.display="none";},100);
+  setTimeout(()=>{window.print();ph.style.display="none";},100);
 });
 document.getElementById("btn-csv").addEventListener("click",()=>{
   const hd=isHalfDayOnly();
-  const wn=id=>(workTypes.find(w=>w.id===id)||workTypes[0]).name;
+  const wn=(id,wt)=>(wt.find(w=>w.id===id)||wt[0]).name;
   const header=hd?["氏名","種別","状況","午前作業","午前場所"]:["氏名","種別","状況","午前作業","午前場所","午後作業","午後場所"];
   const rows=[header];
-  members.forEach(m=>{const r=[m.name,"利用者",USER_BADGE_LABEL[m.status]||"出席",wn(m.amWork),m.amLoc||""];if(!hd)r.push(wn(m.pmWork),m.pmLoc||"");rows.push(r);});
-  staffMembers.forEach(m=>{const r=[m.name,"職員",STAFF_BADGE_LABEL[m.status]||"出勤",wn(m.amWork),m.amLoc||""];if(!hd)r.push(wn(m.pmWork),m.pmLoc||"");rows.push(r);});
+  members.forEach(m=>{const r=[m.name,"利用者",USER_BADGE_LABEL[m.status]||"出席",wn(m.amWork,workTypes),m.amLoc||""];if(!hd)r.push(wn(m.pmWork,workTypes),m.pmLoc||"");rows.push(r);});
+  staffMembers.forEach(m=>{const r=[m.name,"職員",STAFF_BADGE_LABEL[m.status]||"出勤",wn(m.amWork,staffWorkTypes),m.amLoc||""];if(!hd)r.push(wn(m.pmWork,staffWorkTypes),m.pmLoc||"");rows.push(r);});
   const csv="\uFEFF"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
-  a.download=`作業記録_${todayStr()}.csv`; a.click();
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`作業記録_${todayStr()}.csv`;a.click();
   document.getElementById("export-modal").classList.remove("open");
 });
 document.getElementById("btn-txt").addEventListener("click",()=>{
   const hd=isHalfDayOnly();
-  const wn=(id,loc)=>{const w=workTypes.find(x=>x.id===id)||workTypes[0];return w.name+(loc?`(${loc})`:"")}; 
+  const wn=(id,loc,wt)=>{const w=wt.find(x=>x.id===id)||wt[0];return w.name+(loc?`(${loc})`:"")}; 
   let txt=`【作業・出欠記録】${todayLabel()}\n出席${members.filter(m=>m.status!=="absent").length}名 / 欠席${members.filter(m=>m.status==="absent").length}名\n\n■ 利用者\n`;
   members.forEach((m,i)=>{
-    let line=`${i+1}. ${m.name}　${USER_BADGE_LABEL[m.status]||"出席"}　午前:${wn(m.amWork,m.amLoc)}`;
-    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc)}`;
+    let line=`${i+1}. ${m.name}　${USER_BADGE_LABEL[m.status]||"出席"}　午前:${wn(m.amWork,m.amLoc,workTypes)}`;
+    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc,workTypes)}`;
     txt+=line+"\n";
   });
   txt+="\n■ 職員\n";
   staffMembers.forEach(m=>{
-    let line=`${m.name}　${STAFF_BADGE_LABEL[m.status]||"出勤"}　午前:${wn(m.amWork,m.amLoc)}`;
-    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc)}`;
+    let line=`${m.name}　${STAFF_BADGE_LABEL[m.status]||"出勤"}　午前:${wn(m.amWork,m.amLoc,staffWorkTypes)}`;
+    if(!hd&&m.status!=="half-am"&&m.status!=="absent")line+=`　午後:${wn(m.pmWork,m.pmLoc,staffWorkTypes)}`;
     txt+=line+"\n";
   });
   navigator.clipboard.writeText(txt).then(()=>alert("クリップボードにコピーしました！")).catch(()=>alert("コピーできませんでした。"));
   document.getElementById("export-modal").classList.remove("open");
 });
 
+// ── 設定 ──────────────────────────────────
+function buildInsertPosSelect(){
+  const sel=document.getElementById("insert-pos-select");
+  sel.innerHTML=`<option value="0">先頭</option>`+
+    members.map((m,i)=>`<option value="${i+1}">${m.name}の後</option>`).join("")+
+    `<option value="${members.length}" selected>最後</option>`;
+  sel.value=String(members.length);
+}
+
 function renderSettings(){
   document.getElementById("holiday-count-label").textContent=`${holidaySet.size}件の祝日を読み込み済み`;
   document.getElementById("holiday-updated-at").textContent=holidayUpdatedAt;
+
   document.getElementById("work-type-list").innerHTML=workTypes.filter(w=>w.id!=="none").map((w,i)=>
     `<div class="row-item">
       <div style="width:14px;height:14px;border-radius:3px;background:${w.color};border:0.5px solid ${w.textColor}44;flex-shrink:0"></div>
@@ -593,53 +664,73 @@ function renderSettings(){
       <input type="color" value="${w.color==="transparent"?"#cccccc":w.color}" data-wi="${i+1}" style="width:22px;height:20px;border:none;padding:0;cursor:pointer;border-radius:3px;">
       <button class="idel" data-wdel="${i+1}">×</button>
     </div>`).join("");
+
   document.getElementById("grass-tag-list").innerHTML=grassLocations.map((l,i)=>
     `<div class="tag-item">${l}<button class="tag-del" data-gi="${i}">×</button></div>`).join("");
+
   document.getElementById("user-list-s").innerHTML=members.map((m,i)=>
-    `<div class="row-item"><span>${i+1}. ${m.name}</span><button class="idel" data-udel="${i}">×</button></div>`).join("");
+    `<div class="row-item">
+      <span>${i+1}. ${m.name}</span>
+      <button class="imove" data-uup="${i}" title="上へ" ${i===0?"disabled":""}>▲</button>
+      <button class="imove" data-udown="${i}" title="下へ" ${i===members.length-1?"disabled":""}>▼</button>
+      <button class="idel" data-udel="${i}">×</button>
+    </div>`).join("");
+
   document.getElementById("staff-list-s").innerHTML=staffMembers.map((m,i)=>
     `<div class="row-item"><span>${m.name}</span><button class="idel" data-sdel="${i}">×</button></div>`).join("");
 
+  buildInsertPosSelect();
+
   document.querySelectorAll("[data-wi]").forEach(inp=>{inp.addEventListener("change",()=>{workTypes[+inp.dataset.wi].color=inp.value;workTypes[+inp.dataset.wi].textColor=contrastText(inp.value);saveAll();renderSettings();});});
-  document.querySelectorAll("[data-wdel]").forEach(b=>b.addEventListener("click",()=>{workTypes.splice(+b.dataset.wdel,1);saveAll();renderSettings();}));
-  document.querySelectorAll(".tag-del").forEach(b=>b.addEventListener("click",()=>{grassLocations.splice(+b.dataset.gi,1);saveAll();renderSettings();}));
-  document.querySelectorAll("[data-udel]").forEach(b=>b.addEventListener("click",()=>{members.splice(+b.dataset.udel,1);saveAll();renderSettings();}));
-  document.querySelectorAll("[data-sdel]").forEach(b=>b.addEventListener("click",()=>{
-    staffMembers.splice(+b.dataset.sdel,1); saveAll(); renderSettings();
+  document.querySelectorAll("[data-wdel]").forEach(b=>b.addEventListener("click",()=>{if(!confirm(`「${workTypes[+b.dataset.wdel]?.name}」を削除しますか？`))return;workTypes.splice(+b.dataset.wdel,1);saveAll();renderSettings();}));
+  document.querySelectorAll(".tag-del").forEach(b=>b.addEventListener("click",()=>{if(!confirm(`「${grassLocations[+b.dataset.gi]}」を削除しますか？`))return;grassLocations.splice(+b.dataset.gi,1);saveAll();renderSettings();}));
+  document.querySelectorAll("[data-uup]").forEach(b=>b.addEventListener("click",()=>{
+    const i=+b.dataset.uup;if(i===0)return;
+    [members[i-1],members[i]]=[members[i],members[i-1]];saveAll();renderSettings();
   }));
+  document.querySelectorAll("[data-udown]").forEach(b=>b.addEventListener("click",()=>{
+    const i=+b.dataset.udown;if(i>=members.length-1)return;
+    [members[i],members[i+1]]=[members[i+1],members[i]];saveAll();renderSettings();
+  }));
+  document.querySelectorAll("[data-udel]").forEach(b=>b.addEventListener("click",()=>{if(!confirm(`「${members[+b.dataset.udel]?.name}」を削除しますか？`))return;members.splice(+b.dataset.udel,1);saveAll();renderSettings();}));
+  document.querySelectorAll("[data-sdel]").forEach(b=>b.addEventListener("click",()=>{if(!confirm(`「${staffMembers[+b.dataset.sdel]?.name}」を削除しますか？`))return;staffMembers.splice(+b.dataset.sdel,1);saveAll();renderSettings();}));
 }
 
 document.getElementById("btn-fetch-holidays").addEventListener("click",fetchHolidays);
 document.getElementById("btn-settings").addEventListener("click",()=>{renderSettings();document.getElementById("settings-modal").classList.add("open");});
-document.getElementById("settings-close").addEventListener("click",()=>{document.getElementById("settings-modal").classList.remove("open");});
-document.getElementById("settings-modal").addEventListener("click",e=>{if(e.target===document.getElementById("settings-modal"))document.getElementById("settings-modal").classList.remove("open");});
+document.getElementById("settings-close").addEventListener("click",()=>{document.getElementById("settings-modal").classList.remove("open");render();});
+document.getElementById("settings-modal").addEventListener("click",e=>{if(e.target===document.getElementById("settings-modal")){document.getElementById("settings-modal").classList.remove("open");render();}});
 
 document.getElementById("add-work-btn").addEventListener("click",()=>{
   const name=document.getElementById("new-work-name").value.trim();
   const color=document.getElementById("new-work-color").value;
   if(!name)return;
   workTypes.push({id:"w_"+Date.now(),name,color,textColor:contrastText(color)});
-  document.getElementById("new-work-name").value=""; saveAll(); renderSettings();
+  document.getElementById("new-work-name").value="";saveAll();renderSettings();
 });
 document.getElementById("new-work-name").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-work-btn").click();});
+
 document.getElementById("add-loc-btn").addEventListener("click",()=>{
   const v=document.getElementById("new-loc-input").value.trim();
   if(v&&!grassLocations.includes(v)){grassLocations.push(v);document.getElementById("new-loc-input").value="";saveAll();renderSettings();}
 });
 document.getElementById("new-loc-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-loc-btn").click();});
+
 document.getElementById("add-user-btn").addEventListener("click",()=>{
   const v=document.getElementById("new-user-input").value.trim();
   if(!v)return;
   if(members.length>=30){alert("利用者は30名までです");return;}
-  members.push({id:nextId++,name:v,isStaff:false,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""});
-  document.getElementById("new-user-input").value=""; saveAll(); renderSettings();
+  const pos=+document.getElementById("insert-pos-select").value;
+  members.splice(pos,0,{id:nextId++,name:v,isStaff:false,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""});
+  document.getElementById("new-user-input").value="";saveAll();renderSettings();
 });
 document.getElementById("new-user-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-user-btn").click();});
+
 document.getElementById("add-staff-btn").addEventListener("click",()=>{
   const v=document.getElementById("new-staff-input").value.trim();
   if(!v)return;
   staffMembers.push({id:nextId++,name:v,isStaff:true,status:"attend",amWork:"none",amLoc:"",pmWork:"none",pmLoc:""});
-  document.getElementById("new-staff-input").value=""; saveAll(); renderSettings();
+  document.getElementById("new-staff-input").value="";saveAll();renderSettings();
 });
 document.getElementById("new-staff-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("add-staff-btn").click();});
 
